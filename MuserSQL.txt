@@ -1,0 +1,367 @@
+DROP TABLE MU_BOARD;
+DROP TABLE CART;
+DROP TABLE MU_CATEGORY;
+DROP TABLE REVIEW;
+DROP TABLE ROOMREVIEW;
+DROP TABLE MU_OFFICE;
+--DROP TABLE MU_LIKE;
+--DROP TABLE MU_ORDER;
+DROP TABLE RESERVATION;
+DROP TABLE MU_GOODS; 
+DROP TABLE MU_MEMBER;
+--파일 업로드 테이블
+DROP TABLE MP_FILE;
+--QNA 테이블
+DROP TABLE MU_QNA;
+--QNA 테이블 시퀀스
+DROP SEQUENCE QNA_SEQ;
+--QNA 페이징 시퀀스
+DROP SEQUENCE QNA_P_SEQ;
+--회원 테이블 시퀀스
+DROP SEQUENCE MT_SEQ;
+--회원 리스트 페이징 시퀀스
+DROP SEQUENCE MT_P_SEQ;
+--자유게시판 시퀀스
+DROP SEQUENCE MBT_SEQ;
+--페이징 시퀀스
+DROP SEQUENCE MBT_P_SEQ;
+--파일 업로드 시퀀스
+DROP SEQUENCE SEQ_MP_FILE_NO;
+--상품 리뷰 시퀀스
+DROP SEQUENCE RV_SEQ;
+--연습실 리뷰 시퀀스
+DROP SEQUENCE RRV_SEQ;
+--연습실 시퀀스
+DROP SEQUENCE OF_SEQ;
+--연습실 페이징 시퀀스
+DROP SEQUENCE OF_P_SEQ;
+--연습실 파일 업로드 테이블
+DROP TABLE MP_RFILE;
+--연습실파일 업로드 시퀀스
+DROP SEQUENCE SEQ_MP_RFILE_NO;
+--상품 시퀀스
+DROP SEQUENCE GDS_SEQ;
+--상품 페이징시퀀스
+DROP SEQUENCE GDS_P_SEQ;
+--상품 파일 업로드 테이블
+DROP TABLE MP_GFILE;
+--상품 파일 업로드 시퀀스
+DROP SEQUENCE SEQ_MP_GFILE_NO;
+-- 장바구니 시퀀스 
+DROP SEQUENCE CART_SEQ;
+--예약 시퀀스
+DROP SEQUENCE RES_SEQ;
+
+--------------------------------------------------------
+--관리자더미
+--insert into MU_MEMBER 
+--values(0,'admin','admin','관리자', SYSDATE, '없음', '없음','없음','없음', '없음','없음',1);
+
+--관리자 아이디 admin으로 회원가입후 설정 수정하기
+UPDATE MU_MEMBER SET MUNO = 0, MUADMINCK = 1 WHERE MUID = 'admin';
+
+--------------------------------------------------------
+--회원
+CREATE TABLE MU_MEMBER(
+    MUNO       NUMBER,                    --회원번호
+    MUID       NVARCHAR2(30),             --아이디
+    MUPW       NVARCHAR2(100) NOT NULL,   --패스워드
+    MUNAME     NVARCHAR2(30) NOT NULL,    --이름    
+    MUBIRTH    DATE NOT NULL,             --생년원일    
+    MUPHONE    NVARCHAR2(20)NOT NULL,     --연락처
+    MUADDR1    NVARCHAR2(100) NOT NULL,   --주소
+    MUADDR2    NVARCHAR2(100) NOT NULL,   --주소
+    MUADDR3    NVARCHAR2(100) NOT NULL,   --주소
+    MUEMAIL    NVARCHAR2(100) NOT NULL,   --이메일
+----------MUIMG      NVARCHAR2(50),             --사진 
+    MUADMINCK  NUMBER NOT NULL,           --관리자 구분(0:일반사용자, 1:관리자)
+    CONSTRAINT MT_PK PRIMARY KEY(MUID)    
+);
+
+-- MT_SEQ 시퀀스 생성
+CREATE SEQUENCE MT_SEQ INCREMENT BY 1 START WITH 1;
+--회원 리스트 페이징 시퀀스
+CREATE SEQUENCE MT_P_SEQ INCREMENT BY 1 START WITH 1 MAXVALUE 1000 CYCLE NOCACHE;
+--회원 출력
+SELECT * FROM MU_MEMBER;
+
+
+--회원더미
+--insert into MU_MEMBER 
+--values(MT_SEQ.NEXTVAL,'apple1','1234','ppl', SYSDATE, '없음', '없음','없음','없음', '없음','없음',0);
+--insert into MU_MEMBER 
+--values(MT_SEQ.NEXTVAL,'apple2','1234','ppl', SYSDATE, '없음', '없음','없음','없음', '없음','없음',0);
+
+
+--게시판
+CREATE TABLE MU_BOARD(
+    BOARDNO    NUMBER NOT NULL,                  --글번호   
+    MUID       NVARCHAR2(30) NOT NULL,           --작성자 아이디
+    BOARDTITLE NVARCHAR2(100)NOT NULL,  --게시글 제목 
+    BOARDDESC  NVARCHAR2(1000)NOT NULL, --게시글 내용 
+    BDATE  DATE NOT NULL,           --게시글 작성일
+    BOARDHIT   NUMBER default '0',                  --게시글 조회수 
+    CONSTRAINT UB_PK PRIMARY KEY(BOARDNO)
+);
+
+CREATE SEQUENCE MBT_SEQ INCREMENT BY 1 START WITH 1 MAXVALUE 1000 CYCLE NOCACHE;
+----------------------------
+
+--페이징 시퀀스
+CREATE SEQUENCE MBT_P_SEQ INCREMENT BY 1 START WITH 1 MAXVALUE 1000 CYCLE NOCACHE;
+-----------------------------
+
+--테이블 출력
+SELECT * FROM MU_BOARD;
+
+--게시글 더미 데이터
+--insert into MU_BOARD 
+--values(MBT_SEQ.NEXTVAL,'admin','관리자','TITLE1','CONTENTS mfu',SYSDATE,0);
+--insert into MU_BOARD 
+--values(MBT_SEQ.NEXTVAL,'jane','제인','TITLE2','CONTENTS mfu2',SYSDATE,0);
+
+--파일 테이블
+CREATE TABLE MP_FILE
+(
+    FILE_NO NUMBER,                         --파일 번호
+    BOARDNO NUMBER NOT NULL,                    --게시판 번호
+    ORG_FILE_NAME VARCHAR2(260) NOT NULL,   --원본 파일 이름
+    STORED_FILE_NAME VARCHAR2(36) NOT NULL, --변경된 파일 이름
+    FILE_SIZE NUMBER,                       --파일 크기
+    REGDATE DATE DEFAULT SYSDATE NOT NULL,  --파일등록일
+    DEL_GB VARCHAR2(1) DEFAULT 'N' NOT NULL,--삭제구분
+    PRIMARY KEY(FILE_NO)                    --기본키 FILE_NO
+);
+--파일 시퀀스
+CREATE SEQUENCE SEQ_MP_FILE_NO START WITH 1 INCREMENT BY 1 NOMAXVALUE NOCACHE;
+
+
+---------------------------------------------------------
+--QnA 테이블
+CREATE TABLE MU_QNA(
+    QNANO    NUMBER NOT NULL,           --QNA게시판 번호
+    MUID     NVARCHAR2(30) NOT NULL,    --작성자 아이디
+    QNATITLE NVARCHAR2(100) NOT NULL,   --QNA게시판 제목
+    QNADESC  NVARCHAR2(1000) NOT NULL,  --QNA게시판 내용
+    QNADATE  DATE NOT NULL,              --QNA 등록날짜
+    CONSTRAINT QNA_PK PRIMARY KEY(QNANO)
+);
+--QNA 시퀀스
+CREATE SEQUENCE QNA_SEQ INCREMENT BY 1 START WITH 1 MAXVALUE 1000 CYCLE NOCACHE;
+--QNA 페이징 시퀀스
+CREATE SEQUENCE QNA_P_SEQ INCREMENT BY 1 START WITH 1 MAXVALUE 1000 CYCLE NOCACHE;
+
+--QNA테이블 출력
+SELECT * FROM MU_QNA;
+
+--판매물건
+CREATE TABLE MU_GOODS(
+    GDSNO     NUMBER,         --상품번호
+    GDSNAME   NVARCHAR2(100), --상품이름
+    GDSPRICE  NUMBER,         --상품가격   
+    GDSAMOUNT NUMBER default '0', --상품재고 
+    CATECODE  NVARCHAR2(30),         --카테고리코드
+    GDSDATE  DATE,
+    GDSIMG1    NVARCHAR2(200),  --상품사진 
+    GDSIMG2    NVARCHAR2(200),  --상품다른사진1
+    GDSIMG3    NVARCHAR2(200),  --상품다른사진2
+    GDSIMG4    NVARCHAR2(200),  --상품다른사진3
+    GDSIMG5    NVARCHAR2(200),  --상품설명사진
+    GDSNATIONAL NVARCHAR2(50), --제조국
+    GDSBRAND NVARCHAR2(50),     --브랜드명
+    GDSPACKAGE NVARCHAR2(50),   --패키지
+    PRIMARY KEY(GDSNO)
+);
+--상품 시퀀스
+CREATE SEQUENCE GDS_SEQ INCREMENT BY 1 START WITH 1 MAXVALUE 1000 CYCLE NOCACHE;
+--상품 페이징시퀀스
+CREATE SEQUENCE GDS_P_SEQ INCREMENT BY 1 START WITH 1 MAXVALUE 1000 CYCLE NOCACHE;
+
+SELECT*FROM MU_GOODS;
+
+--상품파일 테이블
+CREATE TABLE MP_GFILE
+(
+    FILE_NO NUMBER,                         --파일 번호
+    GDSNO NUMBER NOT NULL,                    --게시판 번호
+    ORG_FILE_NAME VARCHAR2(260) NOT NULL,   --원본 파일 이름
+    STORED_FILE_NAME VARCHAR2(36) NOT NULL, --변경된 파일 이름
+    FILE_SIZE NUMBER,                       --파일 크기
+    REGDATE DATE DEFAULT SYSDATE NOT NULL,  --파일등록일
+    DEL_GB VARCHAR2(1) DEFAULT 'N' NOT NULL,--삭제구분
+    PRIMARY KEY(FILE_NO)                    --기본키 FILE_NO
+);
+--상품파일 시퀀스
+CREATE SEQUENCE SEQ_MP_GFILE_NO START WITH 1 INCREMENT BY 1 NOMAXVALUE NOCACHE;
+
+SELECT * FROM MP_GFILE;
+---------------------------------------------------------------------------------
+
+--상품리뷰
+CREATE TABLE REVIEW(
+    REVIEWNO  NUMBER PRIMARY KEY, --리뷰번호
+    MUID      NVARCHAR2(30) NOT NULL, -- 작성자 아이디
+    OFNO      NUMBER, --연습실번호 
+    GDSNO     NUMBER, --상품번호
+    STARS     NUMBER, --별점
+    RVDATE    DATE,   --등록날짜
+    REVIEWDESC NVARCHAR2(1000) --리뷰내용 
+--    FOREIGN KEY (MUNO) REFERENCES MU_MEMBER(MUNO),
+--    FOREIGN KEY (OFNO) REFERENCES MU_OFFICE(OFNO),
+--    FOREIGN KEY (GDSNO) REFERENCES MU_GOODS(GDSNO)
+);
+--REVIEW 시퀀스
+CREATE SEQUENCE RV_SEQ INCREMENT BY 1 START WITH 1 MAXVALUE 1000 CYCLE NOCACHE;
+----REVIEW 페이징 시퀀스
+--CREATE SEQUENCE RV_P_SEQ INCREMENT BY 1 START WITH 1 MAXVALUE 1000 CYCLE NOCACHE;
+
+SELECT * FROM REVIEW;
+
+
+-----------------------------------------------------------------------------------
+
+----연습실
+CREATE TABLE MU_OFFICE(
+    OFNO  NUMBER,           --연습실번호
+    OFNAME NVARCHAR2(100), --연습실 명칭
+    OFDESC NVARCHAR2(200), --연습실 갼략소개
+    OFADDR1 NVARCHAR2(100),  --연습실주소1
+    OFADDR2 NVARCHAR2(100),  --연습실주소2
+    OFADDR3 NVARCHAR2(100),  --연습실주소3
+    REPNAME NVARCHAR2(100), --업주이름 
+    REPPHONE NVARCHAR2(20), --업주전화번호
+    OFPRICE NUMBER,         --대여료
+    OFIMG1   NVARCHAR2(200),  --연습실사진1
+    OFIMG2   NVARCHAR2(200),  --연습실사진2
+    OFIMG3   NVARCHAR2(200),  --연습실사진3
+    OFIMG4   NVARCHAR2(200),  --연습실사진4
+    OFIMG5   NVARCHAR2(200),  --연습실사진5
+    OFIMG6   NVARCHAR2(200),  --연습실사진6
+    OFIMG7   NVARCHAR2(200),  --연습실사진7
+    OFIMG8   NVARCHAR2(200),  --연습실사진8
+    OFDATE DATE,            --등록날짜
+    OFFICEHIT   NUMBER default '0',   --연습실 조회수 
+    PRIMARY KEY(OFNO)
+);
+
+-- 연습실NO 시퀀스 생성
+CREATE SEQUENCE OF_SEQ INCREMENT BY 1 START WITH 1 MAXVALUE 1000 CYCLE NOCACHE;
+--연습실 페이징 시퀀스
+CREATE SEQUENCE OF_P_SEQ INCREMENT BY 1 START WITH 1 MAXVALUE 1000 CYCLE NOCACHE;
+--연습실 출력
+SELECT * FROM MU_OFFICE;
+
+
+--연습실파일 테이블
+CREATE TABLE MP_RFILE
+(
+    FILE_NO NUMBER,                         --파일 번호
+    OFNO NUMBER NOT NULL,                    --게시판 번호
+    ORG_FILE_NAME VARCHAR2(260) NOT NULL,   --원본 파일 이름
+    STORED_FILE_NAME VARCHAR2(36) NOT NULL, --변경된 파일 이름
+    FILE_SIZE NUMBER,                       --파일 크기
+    REGDATE DATE DEFAULT SYSDATE NOT NULL,  --파일등록일
+    DEL_GB VARCHAR2(1) DEFAULT 'N' NOT NULL,--삭제구분
+    PRIMARY KEY(FILE_NO)                    --기본키 FILE_NO
+);
+--연습실파일 시퀀스
+CREATE SEQUENCE SEQ_MP_RFILE_NO START WITH 1 INCREMENT BY 1 NOMAXVALUE NOCACHE;
+
+
+
+-----------------------------------------------------------------------------------
+--연습실 리뷰
+CREATE TABLE ROOMREVIEW(
+    RREVIEWNO  NUMBER PRIMARY KEY, --리뷰번호
+    MUID      NVARCHAR2(30) NOT NULL, -- 작성자 아이디
+    OFNO      NUMBER, --연습실번호 
+    GDSNO     NUMBER, --상품번호
+    STARS     NUMBER, --별점
+    RVDATE    DATE,   --등록날짜
+    RREVIEWDESC NVARCHAR2(1000) --리뷰내용 
+--    FOREIGN KEY (MUNO) REFERENCES MU_MEMBER(MUNO),
+--    FOREIGN KEY (OFNO) REFERENCES MU_OFFICE(OFNO),
+--    FOREIGN KEY (GDSNO) REFERENCES MU_GOODS(GDSNO)
+);
+--REVIEW 시퀀스
+CREATE SEQUENCE RRV_SEQ INCREMENT BY 1 START WITH 1 MAXVALUE 1000 CYCLE NOCACHE;
+----REVIEW 페이징 시퀀스
+--CREATE SEQUENCE RV_P_SEQ INCREMENT BY 1 START WITH 1 MAXVALUE 1000 CYCLE NOCACHE;
+
+SELECT * FROM ROOMREVIEW;
+
+-----------------------------------------------------------------------------------
+
+--장바구니
+CREATE TABLE CART(
+    CARTNO NUMBER, --장바구니번호
+    MUID   NVARCHAR2(30), --회원번호
+    GDSNO  NUMBER, --상품번호 
+    CARTAMOUNT NUMBER DEFAULT 0, --수량
+    PAYCHECK NUMBER, --결제여부
+    PRIMARY KEY (CARTNO)
+);
+ALTER TABLE CART ADD CONSTRAINT CART_MUID_FK FOREIGN KEY(MUID) REFERENCES MU_MEMBER(MUID);
+ALTER TABLE CART ADD CONSTRAINT CART_GDSNO_FK FOREIGN KEY(GDSNO) REFERENCES MU_GOODS(GDSNO);
+
+-- 장바구니 시퀀스
+CREATE SEQUENCE CART_SEQ START WITH 1 INCREMENT BY 1 NOMAXVALUE NOCACHE;
+Select * From cart;
+
+--카테고리
+CREATE TABLE MU_CATEGORY(
+    CATECODE  NVARCHAR2(30),  --카테고리코드
+    CATENAME  NVARCHAR2(100), --카테고리이름
+    --CATECODEREF NUMBER, -- 상위 카테고리코드
+    PRIMARY KEY(CATECODE)
+);
+DROP TABLE MU_CATEGORY;
+--데이터 입력
+INSERT INTO MU_CATEGORY (CATECODE, CATENAME) VALUES ('100','기타');
+INSERT INTO MU_CATEGORY (CATECODE, CATENAME) VALUES ('200','베이스');
+INSERT INTO MU_CATEGORY (CATECODE, CATENAME) VALUES ('300','드럼');
+INSERT INTO MU_CATEGORY (CATECODE, CATENAME) VALUES ('400','피아노');
+
+SELECT * FROM MU_CATEGORY;
+
+------------------------------------------------------------------------------------
+
+
+--예약
+CREATE TABLE RESERVATION(
+    RESNO  NUMBER, --주문번호
+    MUID   NVARCHAR2(30), --회원번호
+    OFNO  NUMBER, --연습실번호 
+    BOOKDATE DATE,  --날짜
+    COST	NUMBER,   --ㅂㅣ용
+    PRIMARY KEY(RESNO)
+);
+ALTER TABLE RESERVATION ADD CONSTRAINT RESERVATION_MUID_FK FOREIGN KEY(MUID) REFERENCES MU_MEMBER(MUID);
+ALTER TABLE RESERVATION ADD CONSTRAINT RESERVATION_OFNO_FK FOREIGN KEY(OFNO) REFERENCES MU_OFFICE(OFNO);
+--drop table reservation;
+-- 예약넘버 시퀀스
+CREATE SEQUENCE RES_SEQ START WITH 1 INCREMENT BY 1 NOMAXVALUE NOCACHE;
+Select * From RESERVATION;
+
+
+commit;
+
+------------------------------------------------------------------------------------
+----주문
+--CREATE TABLE MU_ORDER(
+--    ORDERNO  NUMBER PRIMARY KEY, --주문번호
+--    GDSNO    NUMBER,        --상품번호
+--    ORDERDATE DATE,          --날짜  
+--    SHIPPINGCODE NUMBER,    --배송코드
+--    FOREIGN KEY (GDSNO) REFERENCES MU_GOODS(GDSNO)
+--);
+--
+----좋아요
+--CREATE TABLE MU_LIKE(
+--    LIKEID  NVARCHAR2(30) PRIMARY KEY, --좋아요
+--    MUNO    NUMBER,        --회원번호
+--    GDSNO   NUMBER,        --상품번호    
+--    FOREIGN KEY (MUNO) REFERENCES MU_MEMBER(MUNO),
+--    FOREIGN KEY (GDSNO) REFERENCES MU_GOODS(GDSNO)
+--);
+
